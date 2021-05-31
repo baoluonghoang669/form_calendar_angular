@@ -1,0 +1,137 @@
+<div class="row">
+    <div class="col-xs-12">
+        <form [formGroup]="formSubmit" (ngSubmit)="onSubmit()">
+            <div class="form-group d-flex justify-content-between">
+                <h2>Google calendar</h2>
+                <button class="btn-delete">X</button>
+            </div>
+            <hr>
+            <div>
+                <h4>Input</h4>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <select class="form-select" formControlName="input" (change)="onSelectedOption($event)">
+                    <label for="action">Action</label>
+                      <option
+                        *ngFor="let action of selectOptions; let i = index"
+                        [value]="action"
+                        >
+                        {{action}}
+                      </option>
+                    </select>
+                </div>
+
+                <!-- create event -->
+                <div *ngIf="selected === 'Create Event'" formGroupName="createEvent">
+                    <div class="form-group">
+                        <label for="calendar">Calendar ID<i class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="calendar" formControlName="calendarId">
+                    </div>
+                    <div *ngIf="!formSubmit.get('createEvent.calendarId').valid && formSubmit.get('createEvent.calendarId').touched">
+                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.calendarId').errors['required']">Calendar Id is required !</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="start">Start Time<i class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="start" formControlName="startTime">
+                    </div>
+                    <div *ngIf="!formSubmit.get('createEvent.startTime').valid && formSubmit.get('createEvent.startTime').touched">
+                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.startTime').errors['required']">Start Time is required !</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="end">End Time<i class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="end" formControlName="endTime">
+                    </div>
+                    <div *ngIf="!formSubmit.get('createEvent.endTime').valid && formSubmit.get('createEvent.endTime').touched">
+                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.endTime').errors['required']">End time is required !</span>
+                    </div>
+                    <div class="custom-form" formArrayName="attendees">
+                        <label for="attendees">Attendees</label>
+                        <div class="form-group flex-md-column" *ngFor="let attendee of getAttendees(); let i = index">
+                            <input type="text" class="form-control" id="attendees" [formControlName]="i">
+                        </div>
+                        <button type="button" class="button-add" (click)="onAddAttendees()">+</button>
+                    </div>
+                </div>
+                <!-- end create event -->
+
+                <!-- common inputs -->
+                <div *ngIf="selected ==='Create Calendar' || selected === 'Create Event'" formGroupName="commonInputs">
+                    <div class="form-group">
+                        <label for="summary">Summary<i *ngIf="selected === 'Create Calendar'" class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="summary" formControlName="summary">
+                    </div>
+
+                    <div *ngIf="!formSubmit.get('commonInputs.summary').valid && formSubmit.get('commonInputs.summary').touched && selected === 'Create Calendar'">
+                        <span class="text-danger" *ngIf="formSubmit.get('commonInputs.summary').errors['required']">Summary is required !</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" class="form-control" id="description" formControlName="description">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" class="form-control" id="location" formControlName="location">
+                    </div>
+                    <!-- create calendar -->
+
+                    <div class="form-group" *ngIf="selected === 'Create Calendar'">
+                        <label for="timezone">Timezone</label>
+                        <input type="text" class="form-control" id="timezone">
+                    </div>
+                    <!-- end create calendar -->
+                </div>
+                <!-- end common inputs -->
+
+                <h4>Info Extract</h4>
+                <!-- create calendar -->
+                <div *ngIf="selected === 'Create Calendar'" formGroupName="infoExtract">
+                    <div class="form-group">
+                        <label for="title">Title<i class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="title" formControlName="title">
+                    </div>
+                    <div *ngIf="!formSubmit.get('infoExtract.title').valid && formSubmit.get('infoExtract.title').touched">
+                        <span class="text-danger" *ngIf="formSubmit.get('infoExtract.title').errors['required']">Title is required !</span>
+                    </div>
+                </div>
+
+
+                <!-- end create calendar -->
+
+                <!-- list calendar -->
+                <div *ngIf="selected === 'List Calendars'" formGroupName="infoExtract">
+                    <div class="form-group">
+                        <input type="checkbox">
+                        <label for="id" style="margin-left: 5px">Id</label>
+                        <input type="text" class="form-control" id="id" formControlName="id">
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox">
+                        <label for="listSummary" style="margin-left: 5px">Summary</label>
+                        <input type="text" class="form-control" id="listSummary" formControlName="listSummary">
+                    </div>
+                </div>
+                <!-- end list calendar -->
+
+                <!-- create event -->
+                <div *ngIf="selected === 'Create Event'" formGroupName="infoExtract">
+                    <div class="form-group">
+                        <input type="checkbox">
+                        <label for="eventId">Event Id<i class="fas fa-certificate"></i></label>
+                        <input type="text" class="form-control" id="eventId" formControlName="eventId">
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox">
+                        <label for="eventLink">Event Link</label>
+                        <input type="text" class="form-control" id="eventLink" formControlName="eventLink">
+                    </div>
+                </div>
+                <!-- end create event -->
+            </div>
+            <hr>
+            <div class="form-group d-flex justify-content-end">
+                <button class="btn btn-danger" type="button" (click)="onClear()">Cancel</button>
+                <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
