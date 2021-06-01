@@ -1,9 +1,9 @@
 import { FormControl } from '@angular/forms';
 
 export class CustomValidators {
-  static invalidProjectName(control: FormControl) {
+  static invalidAttendees(control: FormControl): { [s: string]: boolean } {
     if (control.value === 'Test') {
-      return { 'invalidProjectName': true };
+      return { 'invalidAttendees': true };
     }
     return null;
   }

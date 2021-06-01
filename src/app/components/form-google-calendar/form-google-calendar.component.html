@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-xs-12">
-        <form [formGroup]="formSubmit" (ngSubmit)="onSubmit()">
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
             <div class="form-group d-flex justify-content-between">
                 <h2>Google calendar</h2>
                 <button class="btn-delete">X</button>
@@ -9,8 +9,8 @@
             <div>
                 <h4>Input</h4>
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <select class="form-select" formControlName="input" (change)="onSelectedOption($event)">
                     <label for="action">Action</label>
+                    <select class="form-select" formControlName="input" (change)="onSelectedOption($event)">
                       <option
                         *ngFor="let action of selectOptions; let i = index"
                         [value]="action"
@@ -23,32 +23,43 @@
                 <!-- create event -->
                 <div *ngIf="selected === 'Create Event'" formGroupName="createEvent">
                     <div class="form-group">
-                        <label for="calendar">Calendar ID<i class="fas fa-certificate"></i></label>
-                        <input type="text" class="form-control" id="calendar" formControlName="calendarId">
-                    </div>
-                    <div *ngIf="!formSubmit.get('createEvent.calendarId').valid && formSubmit.get('createEvent.calendarId').touched">
-                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.calendarId').errors['required']">Calendar Id is required !</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="start">Start Time<i class="fas fa-certificate"></i></label>
-                        <input type="text" class="form-control" id="start" formControlName="startTime">
-                    </div>
-                    <div *ngIf="!formSubmit.get('createEvent.startTime').valid && formSubmit.get('createEvent.startTime').touched">
-                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.startTime').errors['required']">Start Time is required !</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="end">End Time<i class="fas fa-certificate"></i></label>
-                        <input type="text" class="form-control" id="end" formControlName="endTime">
-                    </div>
-                    <div *ngIf="!formSubmit.get('createEvent.endTime').valid && formSubmit.get('createEvent.endTime').touched">
-                        <span class="text-danger" *ngIf="formSubmit.get('createEvent.endTime').errors['required']">End time is required !</span>
-                    </div>
-                    <div class="custom-form" formArrayName="attendees">
-                        <label for="attendees">Attendees</label>
-                        <div class="form-group flex-md-column" *ngFor="let attendee of getAttendees(); let i = index">
-                            <input type="text" class="form-control" id="attendees" [formControlName]="i">
+                        <label for="calendar">Calendar Id<i class="fas">*</i></label>
+                        <input type="text" class="form-control" id="calendar" formControlName="calendar">
+                        <div *ngIf="!formGroup.get('createEvent.calendar').valid && formGroup.get('createEvent.calendar').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('createEvent.calendar').errors['required']">CalendarId is required !</span>
                         </div>
-                        <button type="button" class="button-add" (click)="onAddAttendees()">+</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startTime">Start Time<i class="fas">*</i></label>
+                        <input type="datetime-local" class="form-control" id="startTime" formControlName="startTime">
+                        <div *ngIf="!formGroup.get('createEvent.startTime').valid && formGroup.get('createEvent.startTime').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('createEvent.startTime').errors['required']">Start Time is required !</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endTime">End Time<i class="fas">*</i></label>
+                        <input type="datetime-local" class="form-control" id="endTime" formControlName="endTime">
+                        <div *ngIf="!formGroup.get('createEvent.endTime').valid && formGroup.get('createEvent.endTime').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('createEvent.endTime').errors['required']">End time is required !</span>
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="button-add" (click)="onAddAttendee()">+</button>
+                    <div class="custom-form" formArrayName="attendees">
+                        <label for="attendees" class="custom-label">Attendees</label>
+                        <div class="custom-attendees">
+                            <div class="d-flex align-center" *ngFor="let attendee of getAttendees(); let i = index">
+                                <input type="email" class="form-control" id="attendees" [formControlName]="i">
+                                <button type="button" class="button-delete" *ngIf="i > 0" (click)="onDeleteAttendee(i)">-</button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="!formGroup.get('createEvent.attendees').valid && formGroup.get('createEvent.attendees').touched">
+                            <span class="text-danger" *ngIf="checkValidateAttendees">Attendees is invalid</span>
+                        </div>
                     </div>
                 </div>
                 <!-- end create event -->
@@ -56,12 +67,11 @@
                 <!-- common inputs -->
                 <div *ngIf="selected ==='Create Calendar' || selected === 'Create Event'" formGroupName="commonInputs">
                     <div class="form-group">
-                        <label for="summary">Summary<i *ngIf="selected === 'Create Calendar'" class="fas fa-certificate"></i></label>
+                        <label for="summary">Summary<i *ngIf="selected === 'Create Calendar'" class="fas">*</i></label>
                         <input type="text" class="form-control" id="summary" formControlName="summary">
-                    </div>
-
-                    <div *ngIf="!formSubmit.get('commonInputs.summary').valid && formSubmit.get('commonInputs.summary').touched && selected === 'Create Calendar'">
-                        <span class="text-danger" *ngIf="formSubmit.get('commonInputs.summary').errors['required']">Summary is required !</span>
+                        <div *ngIf="!formGroup.get('commonInputs.summary').valid && formGroup.get('commonInputs.summary').touched && selected === 'Create Calendar'">
+                            <span class="text-danger" *ngIf="formGroup.get('commonInputs.summary').errors['required']">Summary is required !</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -86,11 +96,11 @@
                 <!-- create calendar -->
                 <div *ngIf="selected === 'Create Calendar'" formGroupName="infoExtract">
                     <div class="form-group">
-                        <label for="title">Title<i class="fas fa-certificate"></i></label>
+                        <label for="title">Title<i class="fas">*</i></label>
                         <input type="text" class="form-control" id="title" formControlName="title">
-                    </div>
-                    <div *ngIf="!formSubmit.get('infoExtract.title').valid && formSubmit.get('infoExtract.title').touched">
-                        <span class="text-danger" *ngIf="formSubmit.get('infoExtract.title').errors['required']">Title is required !</span>
+                        <div *ngIf="!formGroup.get('infoExtract.title').valid && formGroup.get('infoExtract.title').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.title').errors['required']">Title is required !</span>
+                        </div>
                     </div>
                 </div>
 
@@ -115,14 +125,19 @@
                 <!-- create event -->
                 <div *ngIf="selected === 'Create Event'" formGroupName="infoExtract">
                     <div class="form-group">
-                        <input type="checkbox">
-                        <label for="eventId">Event Id<i class="fas fa-certificate"></i></label>
+                        <label for="eventId">Event Id<i class="fas">*</i></label>
                         <input type="text" class="form-control" id="eventId" formControlName="eventId">
+                        <div *ngIf="!formGroup.get('infoExtract.eventId').valid && formGroup.get('infoExtract.eventId').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.eventId').errors['required']">Event Id is required !</span>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <input type="checkbox">
+                        <input type="checkbox" [(ngModel)]="checkBox" (change)="onChangeCheckBox($event)" [ngModelOptions]="{standalone: true}">
                         <label for="eventLink">Event Link</label>
                         <input type="text" class="form-control" id="eventLink" formControlName="eventLink">
+                        <div *ngIf="!formGroup.get('infoExtract.eventLink').valid && formGroup.get('infoExtract.eventLink').touched">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.eventLink').errors['required']">Event Link is required !</span>
+                        </div>
                     </div>
                 </div>
                 <!-- end create event -->

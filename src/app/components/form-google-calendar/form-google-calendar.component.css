@@ -19,14 +19,23 @@ label {
     margin-top: 1rem;
     display: flex !important;
     align-items: center !important;
+    flex-wrap: wrap;
 }
 
-.fa-certificate {
+.custom-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.fas {
     color: red;
     margin-left: 5px;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="datetime-local"],
+select {
     width: 80%;
 }
 
@@ -40,11 +49,38 @@ button {
 }
 
 .custom-form {
-    margin-top: 5px;
+    margin-top: 1rem;
 }
 
 .button-add {
+    position: absolute;
+    right: 28.7%;
+    top: 53%;
+    color: white;
     border: none;
     background-color: green;
     border-radius: 50%;
+}
+
+.custom-label {
+    margin-right: 0 !important;
+}
+
+.custom-attendees {
+    flex-direction: column;
+    margin-left: 7.5%;
+    flex-grow: 1;
+}
+
+.custom-attendees>div>input {
+    margin-bottom: 1rem;
+}
+
+.button-delete {
+    border: none;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    max-height: 35px;
+    margin-left: 5px;
 }
