@@ -25,7 +25,7 @@
                     <div class="form-group">
                         <label for="calendar">Calendar Id<i class="fas">*</i></label>
                         <input type="text" class="form-control" id="calendar" formControlName="calendar">
-                        <div *ngIf="!formGroup.get('createEvent.calendar').valid && formGroup.get('createEvent.calendar').touched">
+                        <div *ngIf="!formGroup.get('createEvent.calendar').valid && (formGroup.get('createEvent.calendar').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="formGroup.get('createEvent.calendar').errors['required']">CalendarId is required !</span>
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                     <div class="form-group">
                         <label for="startTime">Start Time<i class="fas">*</i></label>
                         <input type="datetime-local" class="form-control" id="startTime" formControlName="startTime">
-                        <div *ngIf="!formGroup.get('createEvent.startTime').valid && formGroup.get('createEvent.startTime').touched">
+                        <div *ngIf="!formGroup.get('createEvent.startTime').valid && (formGroup.get('createEvent.startTime').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="formGroup.get('createEvent.startTime').errors['required']">Start Time is required !</span>
                         </div>
                     </div>
@@ -41,10 +41,12 @@
                     <div class="form-group">
                         <label for="endTime">End Time<i class="fas">*</i></label>
                         <input type="datetime-local" class="form-control" id="endTime" formControlName="endTime">
-                        <div *ngIf="!formGroup.get('createEvent.endTime').valid && formGroup.get('createEvent.endTime').touched">
+                        <div *ngIf="!formGroup.get('createEvent.endTime').valid && (formGroup.get('createEvent.endTime').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="formGroup.get('createEvent.endTime').errors['required']">End time is required !</span>
                         </div>
-
+                        <div *ngIf="startTime() !== '' && endTime()">
+                            <span class="text-danger" *ngIf="startTime() >= endTime()">End time have to be less than Start Time</span>
+                        </div>
                     </div>
 
                     <button type="button" class="button-add" (click)="onAddAttendee()">+</button>
@@ -57,7 +59,7 @@
                             </div>
                         </div>
 
-                        <div *ngIf="!formGroup.get('createEvent.attendees').valid && formGroup.get('createEvent.attendees').touched">
+                        <div *ngIf="!formGroup.get('createEvent.attendees').valid && (formGroup.get('createEvent.attendees').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="checkValidateAttendees">Attendees is invalid</span>
                         </div>
                     </div>
@@ -66,58 +68,63 @@
 
                 <!-- common inputs -->
                 <div *ngIf="selected ==='Create Calendar' || selected === 'Create Event'" formGroupName="commonInputs">
-                    <div class="form-group">
-                        <label for="summary">Summary<i *ngIf="selected === 'Create Calendar'" class="fas">*</i></label>
-                        <input type="text" class="form-control" id="summary" formControlName="summary">
-                        <div *ngIf="!formGroup.get('commonInputs.summary').valid && formGroup.get('commonInputs.summary').touched && selected === 'Create Calendar'">
-                            <span class="text-danger" *ngIf="formGroup.get('commonInputs.summary').errors['required']">Summary is required !</span>
-                        </div>
-                    </div>
+                    <div class="form-group" *ngFor="let list of array_list_input(); let i = index">
+                        <label [for]="list.title">{{list.title | titlecase}}<i *ngIf="selected === 'Create Calendar' && list.title === 'summary'" class="fas">*</i></label>
+                        <input type="text" class="form-control" id="summary" [formControlName]="list.title">
+                        <ng-container *ngIf="selected ==='Create Calendar' ; else elseTemplate">
+                            <div *ngIf="!formGroup.get('commonInputs').get(list.title).valid && list.title === 'summary' && (formGroup.get('commonInputs').get(list.title).touched || isSubmitted) && selected === 'Create Calendar'">
+                                <span class="text-danger" *ngIf="formGroup.get('commonInputs').get(list.title).errors['required']">Summary is required !</span>
+                            </div>
+                        </ng-container>
+                        <ng-template #elseTemplate>
 
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <input type="text" class="form-control" id="description" formControlName="description">
+                        </ng-template>
                     </div>
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" class="form-control" id="location" formControlName="location">
-                    </div>
-                    <!-- create calendar -->
-
-                    <div class="form-group" *ngIf="selected === 'Create Calendar'">
-                        <label for="timezone">Timezone</label>
-                        <input type="text" class="form-control" id="timezone">
-                    </div>
-                    <!-- end create calendar -->
+                </div>
+                <div class="form-group" *ngIf="selected === 'Create Calendar'">
+                    <label for="timezone">Timezone</label>
+                    <input type="text" class="form-control" id="timezone" formControlName="timezone">
                 </div>
                 <!-- end common inputs -->
 
                 <h4>Info Extract</h4>
-                <!-- create calendar -->
+                <!-- create calendar info extract-->
                 <div *ngIf="selected === 'Create Calendar'" formGroupName="infoExtract">
-                    <div class="form-group">
-                        <label for="title">Title<i class="fas">*</i></label>
-                        <input type="text" class="form-control" id="title" formControlName="title">
-                        <div *ngIf="!formGroup.get('infoExtract.title').valid && formGroup.get('infoExtract.title').touched">
-                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.title').errors['required']">Title is required !</span>
+                    <div class="form-group" *ngFor="let list of array_list_title(); let i = index">
+                        <label [for]="list.title">{{list.title | titlecase}}<i class="fas">*</i></label>
+                        <input type="text" class="form-control" id="title" [formControlName]="list.title">
+                        <div *ngIf="!formGroup.get('infoExtract').get(list.title).valid && (formGroup.get('infoExtract').get(list.title).touched || isSubmitted)">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract').get(list.title).errors['required']">{{list.title}} is required !</span>
                         </div>
                     </div>
                 </div>
-
-
-                <!-- end create calendar -->
+                <!-- end create calendar info extract -->
 
                 <!-- list calendar -->
                 <div *ngIf="selected === 'List Calendars'" formGroupName="infoExtract">
+                    <!-- <div class="form-group" *ngFor="let list of array_list_title(); let i = index">
+                        <input *ngIf="list.title === 'id'" type="checkbox" [(ngModel)]="isIdClick" (change)="onChangeId($event)" [ngModelOptions]="{standalone: true}">
+                        <label [for]="list.title">{{list.title | titlecase}}</label>
+                        <input type="text" class="form-control" [id]="list.title" [formControlName]="list.title">
+                        <div *ngIf="!formGroup.get('infoExtract').get(list.title).valid && (formGroup.get('infoExtract').get(list.title).touched || isSubmitted)">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract').get(list.title).errors['required']">{{list.title}} is required !</span>
+                        </div>
+                    </div> -->
                     <div class="form-group">
-                        <input type="checkbox">
+                        <input type="checkbox" [(ngModel)]="isIdClick" (change)="onChangeId($event)" [ngModelOptions]="{standalone: true}">
                         <label for="id" style="margin-left: 5px">Id</label>
                         <input type="text" class="form-control" id="id" formControlName="id">
+                        <div *ngIf="!formGroup.get('infoExtract.id').valid && (formGroup.get('infoExtract.id').touched || isSubmitted)">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.id').errors['required']">Id is required !</span>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <input type="checkbox">
+                        <input type="checkbox" [(ngModel)]="isSumClick" (change)="onChangeSum($event)" [ngModelOptions]="{standalone: true}">
                         <label for="listSummary" style="margin-left: 5px">Summary</label>
                         <input type="text" class="form-control" id="listSummary" formControlName="listSummary">
+                        <div *ngIf="!formGroup.get('infoExtract.listSummary').valid && (formGroup.get('infoExtract.listSummary').touched || isSubmitted)">
+                            <span class="text-danger" *ngIf="formGroup.get('infoExtract.listSummary').errors['required']">Summary is required !</span>
+                        </div>
                     </div>
                 </div>
                 <!-- end list calendar -->
@@ -127,15 +134,15 @@
                     <div class="form-group">
                         <label for="eventId">Event Id<i class="fas">*</i></label>
                         <input type="text" class="form-control" id="eventId" formControlName="eventId">
-                        <div *ngIf="!formGroup.get('infoExtract.eventId').valid && formGroup.get('infoExtract.eventId').touched">
+                        <div *ngIf="!formGroup.get('infoExtract.eventId').valid && (formGroup.get('infoExtract.eventId').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="formGroup.get('infoExtract.eventId').errors['required']">Event Id is required !</span>
                         </div>
                     </div>
                     <div class="form-group">
-                        <input type="checkbox" [(ngModel)]="checkBox" (change)="onChangeCheckBox($event)" [ngModelOptions]="{standalone: true}">
+                        <input type="checkbox" [(ngModel)]="isClick" (change)="onChangeCheckBox($event)" [ngModelOptions]="{standalone: true}">
                         <label for="eventLink">Event Link</label>
                         <input type="text" class="form-control" id="eventLink" formControlName="eventLink">
-                        <div *ngIf="!formGroup.get('infoExtract.eventLink').valid && formGroup.get('infoExtract.eventLink').touched">
+                        <div *ngIf="!formGroup.get('infoExtract.eventLink').valid && (formGroup.get('infoExtract.eventLink').touched || isSubmitted)">
                             <span class="text-danger" *ngIf="formGroup.get('infoExtract.eventLink').errors['required']">Event Link is required !</span>
                         </div>
                     </div>
@@ -149,4 +156,34 @@
             </div>
         </form>
     </div>
+    <!-- <div class="col-xs-12 text-left" *ngIf="isSubmitted">
+        <p><b>Action: </b>{{dataSubmit.action}}</p> -->
+    <!-- <b>List_title: </b>
+        <div *ngIf="selected === 'List Calendars'">
+            <p>Id: {{dataSubmit.list_title.Id}} </p>
+            <p>Summary: {{dataSubmit.list_title.ListSummary}} </p>
+            <b>List_input: </b>
+            <p *ngIf="dataSubmit.list_input === null">Input: null </p>
+        </div>
+        <div *ngIf="selected === 'Create Calendar'">
+            <p>Title: {{dataSubmit.list_title.Title}} </p>
+            <b>List_input: </b>
+            <p>Summary: {{dataSubmit.list_input.Summary}} </p>
+            <p>Description: {{dataSubmit.list_input.Description}} </p>
+            <p>Location: {{dataSubmit.list_input.Location}}</p>
+            <p>Timezone: {{dataSubmit.list_input.Timezone}}</p>
+        </div>
+        <div *ngIf="selected === 'Create Event'">
+            <p>EventId: {{dataSubmit.list_title.EventId}} </p>
+            <p>EventLink: {{dataSubmit.list_title.EventLink}} </p>
+            <b>List_Input: </b>
+            <p>CalendarId: {{dataSubmit.list_input.CalendarId}} </p>
+            <p>StartTime: {{dataSubmit.list_input.StartTime}} </p>
+            <p>EndTime: {{dataSubmit.list_input.EndTime}}</p>
+            <p>Attendees: {{dataSubmit.list_input.Attendees}}</p>
+            <p>Summary: {{dataSubmit.list_input.Summary}} </p>
+            <p>Description: {{dataSubmit.list_input.Description}} </p>
+            <p>Location: {{dataSubmit.list_input.Location}}</p> -->
+    <!-- </div> -->
+    <!-- </div> -->
 </div>

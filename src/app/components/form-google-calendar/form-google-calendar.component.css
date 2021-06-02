@@ -9,6 +9,14 @@ label {
     margin-right: auto;
 }
 
+.text-center {
+    color: red;
+}
+
+.text-left {
+    margin: 0 auto;
+}
+
 .btn-delete {
     outline: none;
     border: none;
