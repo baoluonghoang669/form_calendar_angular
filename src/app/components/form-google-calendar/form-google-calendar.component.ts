@@ -17,7 +17,6 @@ export class FormGoogleCalendarComponent implements OnInit {
   isIdClick = false;
   isSumClick = false;
   constructor(private formBuilder: FormBuilder) { }
-
   ngOnInit() {
     this.formGroup = this.formBuilder.group({
       input: [this.selectOptions],
@@ -39,6 +38,7 @@ export class FormGoogleCalendarComponent implements OnInit {
         title: [null, [Validators.required, Validators.maxLength(255)]],
         eventId: [null, [Validators.required, Validators.maxLength(255)]],
         eventLink: [null, Validators.maxLength(255)],
+        checkEventLink: [this.isClick, Validators.maxLength(255)]
       }),
     });
     this.formGroup.patchValue({
@@ -48,8 +48,7 @@ export class FormGoogleCalendarComponent implements OnInit {
   }
 
   onSelectedOption(event: any) {
-    const value = event.target.value;
-    this.selected = value;
+    this.selected = event.target.value;
     this.isSubmitted = false;
     this.formGroup.patchValue({
       'commonInputs': {
@@ -101,17 +100,11 @@ export class FormGoogleCalendarComponent implements OnInit {
     FunctionCommon.setRequired(event, this.isSumClick, this.formGroup, 'infoExtract.listSummary');
   }
 
-  onClear() {
-    this.selected = 'List Calendars';
-    this.formGroup.reset();
-    this.isClick = false;
-  }
-
   get dataSubmit() {
     return {
       action: this.formGroup.get('input').value,
-      // list_title: this.list_title(),
-      // list_input: this.list_input()
+      list_title: this.list_title(),
+      list_input: this.list_input()
     };
   }
 
@@ -140,14 +133,14 @@ export class FormGoogleCalendarComponent implements OnInit {
         { title: 'listSummary', click: this.isSumClick }
       ];
     } else if (this.selected === 'Create Calendar') {
-      return [{
-        title: 'title',
-      }];
+      return [
+        { title: 'title' },
+      ];
     } else {
-      return [{
-        eventLink: 'Event Link',
-        eventId: 'Event Id',
-      }];
+      return [
+        // { title: 'eventId' },
+        { title: 'eventLink' },
+      ];
     }
   }
   list_input() {
@@ -191,14 +184,44 @@ export class FormGoogleCalendarComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  onClear() {
+    this.selected = 'List Calendars';
+    this.formGroup.reset();
+    this.isSubmitted = false;
+    this.isClick = false;
+    this.isIdClick = false;
+    this.isSumClick = false;
+    this.formGroup.enable();
+  }
+
+  checkProperties(obj: any) {
+    for (const key in obj) {
+      if (obj[key] !== null && obj[key] !== '') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  onEdit() {
+    this.isSubmitted = false;
+    this.formGroup.enable();
+  }
+
+  async onSubmit() {
     this.isSubmitted = true;
-    if (!this.formGroup.valid) {
-      alert('Form is invalid');
-    } else {
-      alert('Form Submitted succesfully!!!\n Check the values in browser console.');
-      console.table(this.formGroup.value);
-      console.log('Data Submmited', this.dataSubmit);
+    if (this.isSubmitted) {
+      this.formGroup.disable();
+    }
+    if (this.selected === 'Create Event' || this.selected === 'Create Calendar') {
+      // check at least 1 field input isNull
+      if (this.checkProperties(this.dataSubmit.list_title) && this.checkProperties(this.list_input)) {
+        this.formGroup.enable();
+        alert('Form is invalid');
+        return null;
+      }
+      alert('Form is submitted');
+      console.log(this.dataSubmit);
     }
   }
 }
